@@ -1,0 +1,11 @@
+conda activate torch
+C:\Users\dongzj\Desktop\Neural_Compass_code\system\backend
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+http://localhost:8000
+
+file:///C:/Users/dongzj/Desktop/Neural_Compass_code/frontend/index.html
+
+conda activate torch
+cd C:\Users\dongzj\Desktop\Neural_Compass_code\backend
+python app.py

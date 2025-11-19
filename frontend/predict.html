@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Alzheimer’s Early Screening · Predict</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="brain.png" />
+  <link rel="shortcut icon" type="image/png" href="brain.png" />
+  <style>
+    :root {
+      --bg-base: #f5f1e3;
+      --bg-soft: #faf5e9;
+      --card-bg: #fffaf0;
+      --card-bg-alt: #f9f1df;
+      --border-soft: #d6c8aa;
+      --border-strong: #b7a37a;
+      --accent: #6f8f5f;
+      --accent-soft: #e0f0cf;
+      --accent-blue: #7fb5b5;
+      --text-main: #3c392c;
+      --text-muted: #7c7763;
+      --danger: #b35b4b;
+      --shadow-soft: 0 14px 34px rgba(149, 125, 95, 0.22);
+      --ui-scale: clamp(0.85, 100vw / 1600, 1.15);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at 0% 0%, rgba(174, 214, 209, 0.7), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(248, 203, 173, 0.65), transparent 55%),
+        radial-gradient(circle at 0% 100%, rgba(190, 213, 159, 0.7), transparent 60%),
+        linear-gradient(#f3efe1, #f7f2e6);
+      min-height: 100vh;
+    }
+    main { padding: 96px 16px 56px; }
+    .container { max-width: 1120px; margin: 0 auto; }
+    #predict.container { max-width: 1600px; margin-left: auto; margin-right: 0; }
+    section { scroll-margin-top: 96px; }
+
+    .top-nav {
+      position: fixed; inset-inline: 0; top: 0; z-index: 100;
+      background: linear-gradient(to bottom,#f0e8d7 0,#f9f3e5 70%,rgba(249,243,229,0.9) 100%);
+      border-bottom: 1px solid rgba(198,178,132,0.7);
+      box-shadow: 0 10px 24px rgba(160,135,100,0.18);
+    }
+    .top-nav::before {
+      content: ""; position: absolute; inset-inline: 0; top: 0; height: 4px;
+      background: linear-gradient(to right, #79b9c7, #9dd0aa, #f4d08a);
+    }
+    .top-nav-inner {
+      position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-logo {
+      width: 34px; height: 34px; border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 30%, #ffffff 0, #fdf6e7 40%, transparent 75%),
+        radial-gradient(circle at 70% 80%, rgba(151, 201, 137, 0.75), transparent 65%);
+      border: 1px solid rgba(170,149,110,0.9);
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+      box-shadow: 0 4px 10px rgba(145,121,86,0.35);
+    }
+    .brand-text-main { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 13px; }
+    .brand-text-sub { font-size: 11px; color: var(--text-muted); }
+    .nav-links { display: flex; align-items: center; gap: 6px; }
+    .nav-link {
+      border-radius: 999px; padding: 7px 16px; font-size: 13px; border: 1px solid transparent;
+      color: var(--text-muted); text-decoration: none; background: transparent; cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .nav-link:hover { background: rgba(224,240,207,0.7); border-color: rgba(170,149,110,0.6); color: var(--text-main); }
+    .nav-link.active {
+      background: var(--accent-soft); border-color: rgba(151,173,118,0.9); color: var(--text-main);
+      font-weight: 600; box-shadow: 0 2px 6px rgba(148,171,111,0.4);
+    }
+
+    #predict { margin-top: 40px; }
+    .section-title { font-size: 24px; margin-bottom: 6px; margin-left: 12px; }
+    .section-subtitle { font-size: 16px; color: var(--text-muted); max-width: 650px; margin-bottom: 20px; margin-left: 12px; }
+
+    .predict-layout {
+      display: grid; grid-template-columns: 800px 0.8fr;
+      gap: 24px; align-items: flex-start; height: calc(100vh - 140px); overflow: hidden;
+    }
+    .form-card {
+      background: transparent; border-radius: 24px; padding: 20px 18px 18px;
+      border: 1px solid transparent; box-shadow: none;
+    }
+    .form-card + .form-card { margin-top: 14px; }
+    .form-section-title { font-size: 15px; color: var(--text-muted); margin: 0 0 10px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 26px; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+    label span { color: var(--danger); margin-left: 1px; }
+    input[type="number"], select {
+      border-radius: 999px; border: 1px solid rgba(186,164,124,0.7); padding: 8px 12px;
+      background: transparent; color: var(--text-main); font-size: 15px; outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease; -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(111,143,95,0.45); background: transparent; }
+    .form-row-full { grid-column: 1 / -1; }
+    .slider-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-muted); }
+    input[type="range"] { flex: 1; }
+    .form-footer {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; justify-content: space-between;
+    }
+    .tiny-text { font-size: 13px; color: var(--text-muted); max-width: 280px; }
+    .help-text { font-size: 14px; color: var(--text-muted); margin: 2px 0 6px; line-height: 1.8; }
+    .daily-cog .form-field { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: baseline; }
+    .daily-cog .form-field input { grid-column: 1 / -1; }
+    .daily-cog .form-field .help-text { margin: 0 0 6px; color: var(--text-muted); }
+    .cog-scales .form-field { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: baseline; }
+    .cog-scales .form-field input { grid-column: 1 / -1; }
+    .cog-scales .form-field .help-text { margin: 0 0 6px; color: var(--text-muted); }
+    .genetic-info .form-field { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: baseline; }
+    .genetic-info .form-field select { grid-column: 1 / -1; }
+    .genetic-info .form-field .help-text { margin: 0 0 6px; color: var(--text-muted); }
+    .group-box { background: transparent; border: 1px dashed rgba(186,164,124,0.4); border-radius: 14px; padding: 12px; margin-top: 8px; }
+    .group-title { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.06em; }
+
+    .primary-btn {
+      border-radius: 999px; border: 1px solid rgba(130,155,104,0.9); padding: 9px 20px; font-size: 14px; font-weight: 600;
+      cursor: pointer; background: linear-gradient(135deg, #8faf6f, #6f8f5f); color: #fdf9ee;
+      box-shadow: 0 9px 18px rgba(118,147,88,0.45); display: inline-flex; align-items: center; gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+    .primary-btn:hover { transform: translateY(-1px); filter: brightness(1.03); box-shadow: 0 12px 26px rgba(118,147,88,0.6); }
+    .ghost-btn {
+      border-radius: 999px; padding: 8px 16px; border: 1px solid rgba(183,159,116,0.75);
+      background: rgba(250,243,226,0.9); font-size: 13px; color: var(--text-main);
+      cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.18s ease;
+    }
+    .ghost-btn:hover { background: #f3e7d0; }
+
+    .left-column { height: 100%; overflow-y: auto; padding-right: 4px; }
+.ui-scale { transform: scale(var(--ui-scale)); transform-origin: top center; width: calc(100% / var(--ui-scale)); }
+
+body { scrollbar-color: transparent transparent; }
+body::-webkit-scrollbar { width: 12px; background: transparent; }
+body::-webkit-scrollbar-thumb { background: transparent; border: none; }
+body::-webkit-scrollbar-track { background: transparent; }
+.left-column::-webkit-scrollbar { width: 8px; background: transparent; }
+.left-column::-webkit-scrollbar-thumb { background: transparent; }
+.left-column::-webkit-scrollbar-track { background: transparent; }
+.floating-panel { scrollbar-color: transparent transparent; }
+.floating-panel::-webkit-scrollbar { width: 8px; background: transparent; }
+.floating-panel::-webkit-scrollbar-thumb { background: transparent; }
+.floating-panel::-webkit-scrollbar-track { background: transparent; }
+html, body { overflow: hidden; }
+
+    .result-card {
+      background: transparent; border-radius: 24px; padding: 18px 24px 16px;
+      border: 1px solid transparent; box-shadow: none; margin-left: 0; width: 100%;
+    }
+    .progress-group { margin-bottom: 12px; }
+    .progress-row { display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .progress-label { font-size: 12px; color: var(--text-muted); }
+    .progress-bar { width: 100%; height: 6px; border-radius: 999px; background: rgba(193,172,133,0.25); overflow: hidden; border: 1px solid rgba(193,172,133,0.4); }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #79b9c7, #9dd0aa); transition: width 0.2s ease; }
+    .chart-area { min-height: 0; margin-bottom: 12px; }
+    .proba-chart { display: grid; gap: 8px; }
+    .bar-row { display: grid; grid-template-columns: 80px 1fr 60px; align-items: center; gap: 8px; }
+    .bar-label { font-size: 12px; color: var(--text-muted); }
+    .bar-track { width: 100%; height: 22px; border-radius: 12px; background: rgba(193,172,133,0.25); overflow: hidden; border: 1px solid rgba(193,172,133,0.4); }
+    .bar { height: 100%; background: linear-gradient(90deg, #9dd0aa, #79b9c7); }
+    .bar-val { font-size: 12px; color: var(--text-main); text-align: right; }
+    .final-result { font-size: 28px; font-weight: 700; color: #111; margin-bottom: 8px; }
+    .chatbox { margin-top: 120px; width: 100%; border: 1px dashed rgba(193,172,133,0.6); border-radius: 12px; padding: 10px; background: rgba(255,255,255,0.15); }
+    .chat-head { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .chat-list { max-height: none; overflow-y: auto; padding: 6px; display: grid; gap: 6px; align-items: start; }
+    .msg { padding: 8px 10px; border-radius: 10px; }
+    .msg.user { background: rgba(127,181,181,0.25); justify-self: end; }
+    .msg.bot { background: rgba(190,213,159,0.25); justify-self: start; }
+    .chat-input-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 8px; }
+    .chat-input-row input { padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(193,172,133,0.6); background: rgba(255,255,255,0.2); color: var(--text-main); }
+    #resultPanel { position: sticky; top: 72px; }
+    .result-label { font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+    .result-score { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+    .result-chip {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 14px; padding: 6px 12px;
+      border-radius: 999px; background: rgba(224,240,207,0.95); border: 1px solid rgba(145,166,112,0.9);
+      color: var(--text-main); margin-bottom: 12px;
+    }
+    .result-detail { font-size: 15px; color: var(--text-muted); line-height: 1.7; }
+    .advice-list { margin-top: 8px; padding-left: 18px; font-size: 14px; color: var(--text-muted); }
+    .advice-list li { margin-bottom: 4px; }
+    .result-note {
+      margin-top: 12px; font-size: 13px; color: var(--text-muted);
+      border-top: 1px dashed rgba(193,172,133,0.9); padding-top: 8px;
+    }
+
+
+    .loading-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: var(--accent);
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 8px;
+      display: none;
+    }
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+    @media (max-width: 900px) {
+      .predict-layout { grid-template-columns: minmax(0, 1fr); }
+      .top-nav-inner { padding-inline: 12px; }
+    }
+    @media (max-width: 640px) {
+      main { padding-inline: 12px; }
+      .top-nav-inner { flex-wrap: wrap; gap: 6px; }
+      .nav-links { width: 100%; justify-content: flex-end; }
+      .form-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    .floating-panel {
+      position: fixed; top: 64px; left: 18px; width: 340px;
+      height: calc(100vh - 96px);
+      padding: 16px; border-radius: 16px;
+      background: rgba(96, 104, 112, 0.72);
+      color: #e9eff9; box-shadow: 0 20px 36px rgba(0,0,0,0.22);
+      backdrop-filter: blur(4px); z-index: 101; overflow-y: auto;
+    }
+    .floating-panel.hidden { display: none; }
+    .floating-close {
+      position: absolute; top: 10px; right: 12px; width: 24px; height: 24px;
+      border-radius: 50%; background: rgba(255,255,255,0.15); color: #fff;
+      border: 1px solid rgba(255,255,255,0.25); cursor: pointer;
+    }
+    .floating-open {
+      position: fixed; top: 100px; left: 14px; z-index: 100; display: none;
+      width: 28px; height: 28px; border-radius: 999px;
+      background: rgba(56,74,119,0.75); color: #fff;
+      border: 1px solid rgba(255,255,255,0.25); cursor: pointer;
+    }
+    .floating-logo { width: 100%; border-radius: 12px; margin-bottom: 12px; max-height: 150px; object-fit: contain; }
+    .floating-title { font-size: 18px; font-weight: 700; margin: 14px 0 8px; letter-spacing: 0.08em; color: #f8fbff; }
+    .floating-sub { font-size: 13px; opacity: 1; letter-spacing: 0.08em; line-height: 2; color: rgba(255,255,255,0.92); }
+    .floating-select {
+      width: 100%; border-radius: 10px; padding: 8px 10px; margin-top: 14px;
+      background: rgba(128, 128, 128, 0.20); color: #e9eff9;
+      border: 1px solid rgba(255,255,255,0.35); letter-spacing: 0.06em;
+    }
+    .floating-section { margin-top: 16px; }
+    .floating-section > div:first-child { margin-top: 12px; color: #f8fbff; }
+  </style>
+</head>
+<body>
+  <header class="top-nav">
+    <div class="container top-nav-inner">
+      <div class="brand">
+        <div class="brand-logo">🧠</div>
+        <div>
+          <div class="brand-text-main">Alzheimer’s</div>
+          <div class="brand-text-sub">Early Screening System</div>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link"><span>首页</span></a>
+        <a href="predict.html" class="nav-link active"><span>筛查</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <button id="floatingOpen" class="floating-open">☰</button>
+  <aside id="floatingPanel" class="floating-panel">
+    <button id="floatingClose" class="floating-close">×</button>
+    <img src="brain.png" alt="logo" class="floating-logo" />
+    <div class="floating-title">Alzheimer's Prediction System<br>阿尔茨海默病筛查系统</div>
+    <div class="floating-sub">Please navigate through the different sections of our website from here<br>请在此浏览页面并进行导航切换</div>
+    <select id="floatingNav" class="floating-select">
+      <option value="index.html">Home / 首页</option>
+      <option value="predict.html" selected>Predict / 筛查</option>
+    </select>
+    <div class="floating-section">
+      <div style="font-weight:600; margin-bottom:6px;">Disclaimer / 免责声明</div>
+      <div class="floating-sub">The predictions provided by this system are for informational purposes only. Consult a healthcare professional for accurate diagnosis and advice.<br>本系统提供的预测仅用于信息展示，不构成诊断或医疗建议。请咨询专业医务人员以获取准确评估与指导。</div>
+    </div>
+    <div class="floating-section">
+      <div style="font-weight:600; margin-bottom:6px;">Contact / 联系我们</div>
+      <div class="floating-sub">For inquiries, you can mail us <a href="mailto:dongzj56@gmail.com" style="color:#e6f0ff; text-decoration:underline;">here</a>.<br>如需咨询，可发送邮件至 <a href="mailto:dongzj56@gmail.com
+        " style="color:#e6f0ff; text-decoration:underline;">dongzj56@gmail.com</a>。</div>
+    </div>
+  <div class="floating-section">
+    <div style="font-weight:600; margin-bottom:6px;">提示与说明</div>
+    <div class="result-note" style="color: #000000;">
+      ⚠️ 本工具的任何风险提示都不构成诊断或治疗依据，
+      不能替代神经科、记忆门诊或精神科专业医生的评估。
+    </div>
+  </div>
+  </aside>
+
+  <main>
+    <section id="predict" class="container">
+      <div class="ui-scale">
+
+
+      <div class="predict-layout">
+        <div class="left-column">
+          <h2 class="section-title">Early Risk Prediction · 筛查界面</h2>
+          <p class="section-subtitle">
+            在下列表单中输入受检者的信息，
+            <strong>带有 <span style="color: red;">*</span> 为必填项</strong>。
+          </p>
+          <form id="predictForm">
+          <div class="form-card">
+            <h3 class="form-section-title">基本情况</h3>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="age">年龄（岁）<span>*</span></label>
+                <input id="age" name="age" type="number" min="20" max="120" placeholder="例如：68" required />
+              </div>
+
+              <div class="form-field">
+                <label for="sex">性别 <span style="color:red">*</span></label>
+                <select id="sex" name="sex" required>
+                  <option value="">请选择</option>
+                  <option value="0">男性</option>
+                  <option value="1">女性</option>
+                  <option value="2">其他 / 不透露</option>
+                </select>
+              </div>
+              
+              <div class="form-field">
+                <label for="educationAge">受教育年龄（6周岁起） <span style="color:red">*</span></label>
+                <input id="educationAge" name="educationAge" type="number" placeholder="6周岁起" required />
+              </div>
+
+              <div class="form-field">
+                <label for="ethnicity">民族</label>
+                <select id="ethnicity" name="ethnicity">
+                  <option value="">请选择</option>
+                  <option value="0">非西班牙裔 / 非拉丁裔</option>
+                  <option value="1">西班牙裔 / 拉丁裔</option>
+                  <option value="2">其他 / 不透露</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="race">种族</label>
+                <select id="race" name="race">
+                  <option value="">请选择</option>
+                  <option value="0">白人</option>
+                  <option value="1">混血</option>
+                  <option value="2">黑人</option>
+                  <option value="3">亚洲人</option>
+                  <option value="4">美洲印第安人 / 阿拉斯加人</option>
+                  <option value="6">夏威夷原住民 / 其他太平洋岛民</option>
+                  <option value="5">其他 / 不透露</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="marital">是否已婚 <span style="color:red">*</span></label>
+                <select id="marital" name="marital" required>
+                  <option value="">请选择</option>
+                  <option value="0">已婚</option>
+                  <option value="1">离异</option>
+                  <option value="2">丧偶</option>
+                  <option value="3">未婚</option>
+                  <option value="4">其他 / 不透露</option>
+                </select>
+              </div>
+
+              <div class="form-field form-row-full">
+                <label for="memoryComplaint">近半年是否感觉记忆下降？<span>*</span></label>
+                <div class="slider-row">
+                  <span>无明显下降</span>
+                  <input id="memoryComplaint" name="memoryComplaint" type="range" min="0" max="10" step="1" value="5" />
+                  <span>严重下降</span>
+                </div>
+              </div>
+              <div class="form-field form-row-full">
+                <label>身体活动水平（自评）</label>
+                <div class="slider-row">
+                  <span>久坐</span>
+                  <input id="activity" name="activity" type="range" min="0" max="10" step="1" value="5" />
+                  <span>规律运动</span>
+                </div>
+              </div>
+              <div class="form-field">
+                <label for="disease">其他患病</label>
+                <select id="disease" name="disease">
+                  <option value="">无 / 不详</option>
+                  <option value="risk">高血压 / 糖尿病 / 高脂血症</option>
+                  <option value="stroke">既往脑卒中 / 颅脑损伤</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card genetic-info">
+            <h3 class="form-section-title">基因遗传信息</h3>
+            <div class="form-grid">
+              <div class="form-field form-row-full">
+                <label for="apoe4">APOE4</label>
+                <div class="help-text">APOE4 是载脂蛋白 E 的等位基因变体，其拷贝数与阿尔茨海默病风险相关。</div>
+                <select id="apoe4" name="apoe4">
+                  <option value="">请选择</option>
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="familyHistory">一级亲属中是否有痴呆或阿尔茨海默病病史？<span>*</span></label>
+                <select id="familyHistory" name="familyHistory" required>
+                  <option value="">请选择</option>
+                  <option value="yes">是</option>
+                  <option value="no">否</option>
+                  <option value="unknown">不清楚</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="siblingHistory">兄弟姐妹是否有痴呆或阿尔茨海默病病史？</label>
+                <select id="siblingHistory" name="siblingHistory">
+                  <option value="">请选择</option>
+                  <option value="yes">是</option>
+                  <option value="no">否</option>
+                  <option value="unknown">不清楚</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-card cog-scales">
+            <h3 class="form-section-title">认知功能量表</h3>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="cdrsb">CDRSB <span style="color:red">*</span></label>
+                <div class="help-text">认知功能评定量表（CDRSB）得分</div>
+                <input id="cdrsb" name="cdrsb" type="number" placeholder="请输入分数" required />
+              </div>
+              <div class="form-field">
+                <label for="adas11">ADAS11</label>
+                <div class="help-text">ADAS-Cog 11 项总分</div>
+                <input id="adas11" name="adas11" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="adas13">ADAS13</label>
+                <div class="help-text">ADAS-Cog 13 项总分</div>
+                <input id="adas13" name="adas13" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="adasq4">ADASQ4</label>
+                <div class="help-text">ADAS 第 4 项评分</div>
+                <input id="adasq4" name="adasq4" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field form-row-full">
+                <label for="mmse">MMSE（0–30） <span style="color:red">*</span></label>
+                <div class="help-text">简易智力状态检查总分</div>
+                <input id="mmse" name="mmse" type="number" placeholder="请输入分数" required />
+              </div>
+              <div class="group-box form-row-full">
+                <div class="group-title">RAVLT 相关</div>
+                <div class="form-grid">
+                  <div class="form-field">
+                    <label for="ravlt_immediate">RAVLT_immediate</label>
+                    <div class="help-text">RAVLT 即刻回忆</div>
+                    <input id="ravlt_immediate" name="ravlt_immediate" type="number" min="0" max="100" />
+                  </div>
+                  <div class="form-field">
+                    <label for="ravlt_learning">RAVLT_learning</label>
+                    <div class="help-text">RAVLT 学习分数</div>
+                    <input id="ravlt_learning" name="ravlt_learning" type="number" min="0" max="100" />
+                  </div>
+                  <div class="form-field">
+                    <label for="ravlt_forgetting">RAVLT_forgetting</label>
+                    <div class="help-text">RAVLT 遗忘分数</div>
+                    <input id="ravlt_forgetting" name="ravlt_forgetting" type="number" min="0" max="100" />
+                  </div>
+                  <div class="form-field">
+                    <label for="ravlt_perc_forgetting">RAVLT_perc_forgetting</label>
+                    <div class="help-text">RAVLT 遗忘百分比</div>
+                    <input id="ravlt_perc_forgetting" name="ravlt_perc_forgetting" type="number" min="0" max="100" />
+                  </div>
+                </div>
+              </div>
+              <div class="form-field">
+                <label for="ldeltotal">LDELTOTAL</label>
+                <div class="help-text">延迟记忆总分（LDELTOTAL）</div>
+                <input id="ldeltotal" name="ldeltotal" type="number" min="0" max="100" />
+              </div>
+              <div class="form-field">
+                <label for="digitscor">DIGITSCOR</label>
+                <div class="help-text">数字广度评分（DIGITSCOR）</div>
+                <input id="digitscor" name="digitscor" type="number" min="0" max="100" />
+              </div>
+              <div class="form-field">
+                <label for="trabscor">TRABSCOR</label>
+                <div class="help-text">连线测验评分（TRABSCOR）</div>
+                <input id="trabscor" name="trabscor" type="number" min="0" max="100" />
+              </div>
+              <div class="form-field">
+                <label for="faq">FAQ</label>
+                <div class="help-text">日常功能问卷总分（FAQ）</div>
+                <input id="faq" name="faq" type="number" min="0" max="100" />
+              </div>
+              <div class="form-field">
+                <label for="moca">MOCA</label>
+                <div class="help-text">蒙特利尔认知评估总分（MOCA）</div>
+                <input id="moca" name="moca" type="number" min="0" max="30" />
+              </div>
+            </div>
+          </div>
+          <div class="form-card daily-cog">
+            <h3 class="form-section-title">日常认知功能</h3>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="EcogPtMem">EcogPtMem</label>
+                <div class="help-text">患者自评记忆功能</div>
+                <input id="EcogPtMem" name="EcogPtMem" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogPtLang">EcogPtLang</label>
+                <div class="help-text">患者自评语言能力</div>
+                <input id="EcogPtLang" name="EcogPtLang" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogPtVisspat">EcogPtVisspat</label>
+                <div class="help-text">患者自评视空间功能</div>
+                <input id="EcogPtVisspat" name="EcogPtVisspat" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogPtPlan">EcogPtPlan</label>
+                <div class="help-text">患者自评计划能力</div>
+                <input id="EcogPtPlan" name="EcogPtPlan" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogPtOrgan">EcogPtOrgan</label>
+                <div class="help-text">患者自评组织能力</div>
+                <input id="EcogPtOrgan" name="EcogPtOrgan" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogPtDivatt">EcogPtDivatt</label>
+                <div class="help-text">患者自评分配注意力</div>
+                <input id="EcogPtDivatt" name="EcogPtDivatt" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogPtTotal">EcogPtTotal</label>
+                <div class="help-text">患者自评量表总分</div>
+                <input id="EcogPtTotal" name="EcogPtTotal" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogSPMem">EcogSPMem</label>
+                <div class="help-text">照护者/同伴评估记忆功能</div>
+                <input id="EcogSPMem" name="EcogSPMem" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogSPLang">EcogSPLang</label>
+                <div class="help-text">照护者/同伴评估语言能力</div>
+                <input id="EcogSPLang" name="EcogSPLang" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogSPVisspat">EcogSPVisspat</label>
+                <div class="help-text">照护者/同伴评估视空间功能</div>
+                <input id="EcogSPVisspat" name="EcogSPVisspat" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogSPPlan">EcogSPPlan</label>
+                <div class="help-text">照护者/同伴评估计划能力</div>
+                <input id="EcogSPPlan" name="EcogSPPlan" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogSPOrgan">EcogSPOrgan</label>
+                <div class="help-text">照护者/同伴评估组织能力</div>
+                <input id="EcogSPOrgan" name="EcogSPOrgan" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogSPDivatt">EcogSPDivatt</label>
+                <div class="help-text">照护者/同伴评分配注意力</div>
+                <input id="EcogSPDivatt" name="EcogSPDivatt" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+              <div class="form-field">
+                <label for="EcogSPTotal">EcogSPTotal</label>
+                <div class="help-text">照护者/同伴量表总分</div>
+                <input id="EcogSPTotal" name="EcogSPTotal" type="number" min="0" max="100" placeholder="请输入分数" />
+              </div>
+            </div>
+          </div>
+
+
+          <div class="form-card imaging-upload">
+            <h3 class="form-section-title">影像数据上传（可选）</h3>
+            <div class="form-grid">
+              <div class="form-field form-row-full">
+                <label for="mriUpload">MRI影像数据上传</label>
+                <div class="help-text">可选上传脑部MRI影像文件，辅助提升认知障碍风险评估准确性（支持DICOM、NIfTI格式）</div>
+                <input id="mriUpload" name="mriUpload" type="file" accept=".dcm,.nii,.nii.gz" />
+              </div>
+              <div class="form-field form-row-full">
+                <label for="petUpload">PET影像数据上传</label>
+                <div class="help-text">可选上传脑部PET影像文件，需选择对应的示踪剂类型（支持DICOM、NIfTI格式）</div>
+                <input id="petUpload" name="petUpload" type="file" accept=".dcm,.nii,.nii.gz" />
+                <div class="help-text">选择PET示踪剂类型</div>
+                <select id="petTracer" name="petTracer">
+                  <option value="">请选择示踪剂</option>
+                  <option value="FDG">FDG（葡萄糖代谢显像）</option>
+                  <option value="Tau">Tau（tau蛋白显像）</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-footer">
+            <div class="tiny-text">*为必填项，模型会灵活利用不完整数据进行预测</div>
+            <div>
+              <button type="reset" class="ghost-btn">清空</button>
+              <button type="submit" class="primary-btn">分析结果</button>
+            </div>
+          </div>
+          </form>
+          </div>
+          
+        <aside class="result-card" id="resultPanel">
+          <div class="result-label">当前评估结果</div>
+          <div id="progressWrap" class="progress-group" style="display:none;">
+            <div class="progress-row"><div class="progress-label">传输数据……</div><div class="progress-bar"><div class="progress-fill" id="progressFill1"></div></div></div>
+            <div class="progress-row"><div class="progress-label">结果分析……</div><div class="progress-bar"><div class="progress-fill" id="progressFill2"></div></div></div>
+            <div class="progress-row"><div class="progress-label">数据加载……</div><div class="progress-bar"><div class="progress-fill" id="progressFill3"></div></div></div>
+          </div>
+          <div class="final-result" id="riskLevel">尚未计算</div>
+          <div class="chart-area">
+            <div id="probaChart" class="proba-chart"></div>
+          </div>
+          <div class="result-chip" id="riskChip">请在左侧填写信息并点击「计算风险」</div>
+          <p class="result-detail" id="riskText"></p>
+
+
+          <div class="chatbox" id="chatBox">
+            <div class="chat-head">AD ChatBot</div>
+            <div class="chat-list" id="chatList"></div>
+            <div id="imagePreviewContainer" style="display: none; margin-bottom: 10px; border: 1px solid #ccc; padding: 5px; border-radius: 5px; position: relative; background-color: #f9f9f9;">
+            <img id="pastedImagePreview" src="" alt="Pasted Image" style="max-width: 100%; max-height: 150px; display: block; margin: 0 auto;">
+            <button id="clearImagePreview" style="position: absolute; top: 5px; right: 5px; background: #f00; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; line-height: 20px; text-align: center; cursor: pointer; font-size: 12px; padding: 0;">x</button>
+          </div>
+          <form id="chatForm" class="chat-input-row">
+              <input id="chatInput" type="text" placeholder="请输入你的问题，例如：APOE4 是什么？" />
+              <button class="ghost-btn" type="submit">发送</button>
+            </form>
+          </div>
+        </aside>
+      </div>
+      </div>
+    </section>
+  </main>
+  <script src="js/api.js"></script>
+  <script>
+    (function(){
+      function resetAll(){
+        var f = document.getElementById('predictForm');
+        if (f) {
+          f.reset();
+          f.querySelectorAll('input[type="file"]').forEach(function(el){ el.value=''; });
+        }
+        var rl = document.getElementById('riskLevel'); if (rl) rl.textContent = '尚未计算';
+        var rt = document.getElementById('riskText'); if (rt) rt.textContent = '';
+        var rc = document.getElementById('riskChip'); if (rc) rc.textContent = '请在左侧填写信息并点击「计算风险」';
+        var pc = document.getElementById('probaChart'); if (pc) pc.innerHTML = '';
+        var cl = document.getElementById('chatList'); if (cl) cl.innerHTML = '';
+        var pw = document.getElementById('progressWrap'); if (pw) pw.style.display = 'none';
+        var mriF = document.getElementById('mriProgressFill'); if (mriF) mriF.style.width = '0%';
+        var petF = document.getElementById('petProgressFill'); if (petF) petF.style.width = '0%';
+        var mriT = document.getElementById('mriProgressText'); if (mriT) mriT.textContent = '';
+        var petT = document.getElementById('petProgressText'); if (petT) petT.textContent = '';
+        var mriN = document.getElementById('mriFileName'); if (mriN) mriN.textContent = '';
+        var petN = document.getElementById('petFileName'); if (petN) petN.textContent = '';
+      }
+      document.addEventListener('DOMContentLoaded', resetAll);
+      window.addEventListener('pageshow', function(){ resetAll(); });
+    })();
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      document.querySelectorAll('input[type="number"]').forEach(function(el){
+        el.removeAttribute('min');
+        el.removeAttribute('max');
+        el.setAttribute('step','any');
+      });
+    });
+  </script>
+
+  <script>
+
+    (function(){
+      var fp = document.getElementById('floatingPanel');
+      var fo = document.getElementById('floatingOpen');
+      var fc = document.getElementById('floatingClose');
+      if (fc) fc.addEventListener('click', function(){ fp.classList.add('hidden'); fo.style.display='block'; });
+      if (fo) fo.addEventListener('click', function(){ fp.classList.remove('hidden'); fo.style.display='none'; });
+      var navSel = document.getElementById('floatingNav');
+      if (navSel) navSel.addEventListener('change', function(){ if (this.value) window.location.href = this.value; });
+    })();
+    document.addEventListener('wheel', function(e){
+      var chatArea = e.target.closest('.chat-list');
+      if (chatArea) return;
+      var leftCol = document.querySelector('.left-column');
+      if (!leftCol) return;
+      leftCol.scrollTop += e.deltaY;
+      e.preventDefault();
+    }, { passive: false });
+  </script>
+  <script>
+    (function(){
+      function resizeChat(){
+        var box = document.getElementById('chatBox');
+        var head = box ? box.querySelector('.chat-head') : null;
+        var inputRow = box ? box.querySelector('.chat-input-row') : null;
+        var list = document.getElementById('chatList');
+        if(!box || !head || !inputRow || !list) return;
+        var bottomGap = 160;
+        var top = box.getBoundingClientRect().top;
+        var height = Math.max(220, window.innerHeight - bottomGap - top);
+        box.style.height = height + 'px';
+        var listH = Math.max(120, height - head.offsetHeight - inputRow.offsetHeight - 24);
+        list.style.height = listH + 'px';
+        list.style.maxHeight = listH + 'px';
+      }
+      window.addEventListener('resize', resizeChat);
+      document.addEventListener('DOMContentLoaded', resizeChat);
+    })();
+  </script>  <script>
+    const chatList = document.getElementById('chatList');
+    const chatInput = document.getElementById('chatInput');
+    const chatForm = document.getElementById('chatForm');
+
+    async function sendMessage() {
+      const userMessage = chatInput.value.trim();
+      if (userMessage === '') return;
+
+      appendMessage(userMessage, 'user');
+      chatInput.value = '';
+
+      const loadingMessageDiv = appendMessage('<div class="loading-spinner"></div>', 'bot', true);
+      loadingMessageDiv.querySelector('.loading-spinner').style.display = 'inline-block';
+      chatList.scrollTop = chatList.scrollHeight;
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: userMessage }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        loadingMessageDiv.remove();
+        appendMessage(data.response, 'bot');
+      } catch (error) {
+        console.error('Error sending message:', error);
+        loadingMessageDiv.remove();
+        appendMessage('抱歉，与AI助手通信时发生错误。', 'bot');
+      }
+      chatList.scrollTop = chatList.scrollHeight;
+    }
+
+    function appendMessage(text, sender, isLoading = false) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `msg ${sender}`;
+      if (isLoading) {
+        msgDiv.innerHTML = text; 
+      } else {
+        msgDiv.textContent = text;
+      }
+      chatList.appendChild(msgDiv);
+      return msgDiv;
+    }
+
+    chatForm.addEventListener('submit', (event) => {
+      event.preventDefault(); 
+      sendMessage();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const chatBox = document.getElementById('chatBox');
+      const chatHead = chatBox.querySelector('.chat-head');
+      const chatInputRow = chatBox.querySelector('.chat-input-row');
+      if (chatBox && chatHead && chatInputRow && chatList) {
+        const chatBoxHeight = chatBox.offsetHeight;
+        const headHeight = chatHead.offsetHeight;
+        const inputRowHeight = chatInputRow.offsetHeight;
+        const padding = 20;
+        chatList.style.maxHeight = `${chatBoxHeight - headHeight - inputRowHeight - padding}px`;
+        chatList.style.overflowY = 'auto';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Alzheimer’s Early Screening</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="brain.png" />
+  <link rel="shortcut icon" type="image/png" href="brain.png" />
+  <style>
+    :root {
+      --bg-base: #f5f1e3;
+      --bg-soft: #faf5e9;
+      --card-bg: #fffaf0;
+      --card-bg-alt: #f9f1df;
+      --border-soft: #d6c8aa;
+      --border-strong: #b7a37a;
+      --accent: #6f8f5f;
+      --accent-soft: #e0f0cf;
+      --accent-blue: #7fb5b5;
+      --text-main: #3c392c;
+      --text-muted: #7c7763;
+      --danger: #b35b4b;
+      --shadow-soft: 0 14px 34px rgba(149, 125, 95, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at 0% 0%, rgba(174, 214, 209, 0.7), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(248, 203, 173, 0.65), transparent 55%),
+        radial-gradient(circle at 0% 100%, rgba(190, 213, 159, 0.7), transparent 60%),
+        linear-gradient(#f3efe1, #f7f2e6);
+      min-height: 100vh;
+    }
+
+    main {
+      padding: 96px 16px 56px;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    section {
+      scroll-margin-top: 96px;
+    }
+    .top-nav {
+      position: fixed;
+      inset-inline: 0;
+      top: 0;
+      z-index: 100;
+      background: linear-gradient(
+        to bottom,
+        #f0e8d7 0,
+        #f9f3e5 70%,
+        rgba(249, 243, 229, 0.9) 100%
+      );
+      border-bottom: 1px solid rgba(198, 178, 132, 0.7);
+      box-shadow: 0 10px 24px rgba(160, 135, 100, 0.18);
+    }
+
+    .top-nav::before {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      top: 0;
+      height: 4px;
+      background: linear-gradient(to right, #79b9c7, #9dd0aa, #f4d08a);
+    }
+
+    .top-nav-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 30%, #ffffff 0, #fdf6e7 40%, transparent 75%),
+        radial-gradient(circle at 70% 80%, rgba(151, 201, 137, 0.75), transparent 65%);
+      border: 1px solid rgba(170, 149, 110, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 10px rgba(145, 121, 86, 0.35);
+    }
+
+    .brand-text-main {
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+
+    .brand-text-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-link {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 13px;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      text-decoration: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(224, 240, 207, 0.7);
+      border-color: rgba(170, 149, 110, 0.6);
+      color: var(--text-main);
+    }
+
+    .nav-link.active {
+      background: var(--accent-soft);
+      border-color: rgba(151, 173, 118, 0.9);
+      color: var(--text-main);
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(148, 171, 111, 0.4);
+    }
+
+    #home {
+      margin-bottom: 40px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr);
+      gap: 48px;
+      align-items: center;
+      padding: 40px 36px 40px;
+      border-radius: 30px;
+      background: radial-gradient(circle at 0% 0%, rgba(190, 216, 159, 0.32), transparent 55%),
+                  radial-gradient(circle at 100% 100%, rgba(164, 203, 203, 0.32), transparent 55%),
+                  var(--card-bg);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 180px;
+      height: 160px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), transparent 70%),
+        radial-gradient(circle at 70% 80%, rgba(188, 214, 165, 0.9), transparent 65%);
+      opacity: 0.6;
+      filter: blur(2px);
+    }
+
+    .hero-content,
+    .hero-visual {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-kicker {
+      font-size: 16px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .hero-title {
+      font-size: clamp(40px, 6vw, 56px);
+      line-height: 1.22;
+      margin: 0 0 14px;
+      font-weight: 700;
+    }
+
+    .hero-subtitle {
+      margin: 0 0 24px;
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 640px;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px dashed rgba(167, 143, 106, 0.65);
+      background: rgba(255, 248, 230, 0.9);
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    .badge small {
+      display: none;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .primary-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(130, 155, 104, 0.9);
+      padding: 14px 28px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #8faf6f, #6f8f5f);
+      color: #fdf9ee;
+      box-shadow: 0 14px 28px rgba(118, 147, 88, 0.5);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+      box-shadow: 0 12px 26px rgba(118, 147, 88, 0.6);
+    }
+
+    .ghost-btn {
+      border-radius: 999px;
+      padding: 12px 20px;
+      border: 1px solid rgba(183, 159, 116, 0.75);
+      background: rgba(250, 243, 226, 0.9);
+      font-size: 16px;
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.18s ease;
+    }
+
+    .ghost-btn:hover {
+      background: #f3e7d0;
+    }
+
+    .hero-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-img {
+      width: 100%;
+      max-width: 640px;
+      border-radius: 26px;
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
+      object-fit: cover;
+    }
+
+    .brain-orb {
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 20%, #ffffff 0, #fdf7ea 30%, transparent 70%),
+        radial-gradient(circle at 70% 80%, rgba(169, 202, 152, 0.9), transparent 65%),
+        radial-gradient(circle at 0% 90%, rgba(127, 181, 181, 0.9), transparent 70%);
+      padding: 20px;
+      border: 1px solid rgba(171, 151, 114, 0.9);
+      box-shadow:
+        0 18px 30px rgba(154, 133, 100, 0.4),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+      position: relative;
+    }
+
+    .brain-orb-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.9), rgba(245, 233, 210, 0.95)),
+        repeating-radial-gradient(circle at 40% 40%, rgba(209, 196, 173, 0.5), transparent 3px, transparent 6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brain-lines {
+      position: absolute;
+      inset: 18%;
+      border-radius: inherit;
+      border: 1px dashed rgba(184, 164, 132, 0.7);
+      opacity: 0.8;
+    }
+
+    .brain-icon {
+      font-size: 64px;
+    }
+
+    .orb-label {
+      position: absolute;
+      bottom: 14px;
+      left: 16px;
+      right: 16px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .orb-chip {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(142, 180, 119, 0.25);
+      font-size: 10px;
+    }
+
+    .hero-disclaimer {
+      margin-top: 42px;
+      padding: 9px 12px;
+      border-radius: 14px;
+      background: rgba(249, 240, 222, 0.98);
+      border: 1px dashed rgba(191, 166, 131, 0.9);
+      font-size: 11px;
+      color: var(--text-muted);
+      max-width: 500px;
+    }
+
+    .info-grid {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .info-card {
+      background: var(--card-bg-alt);
+      border-radius: 22px;
+      padding: 16px 16px 14px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 10px 20px rgba(148, 123, 91, 0.16);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .info-card::before {
+      content: "";
+      position: absolute;
+      right: -20px;
+      bottom: -20px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(215, 195, 150, 0.5), transparent 70%);
+      opacity: 0.6;
+    }
+
+    .info-card h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .info-card p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(249, 242, 225, 0.98);
+      border: 1px solid rgba(193, 172, 133, 0.9);
+      margin-bottom: 5px;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .brain-orb {
+        width: 220px;
+        height: 220px;
+      }
+      .info-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .top-nav-inner {
+        padding-inline: 12px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      main {
+        padding-inline: 12px;
+      }
+      .hero {
+        padding: 20px 18px 22px;
+      }
+      .info-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .top-nav-inner {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .nav-links {
+        width: 100%;
+        justify-content: flex-end;
+      }
+      .hero-actions {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .hero-disclaimer {
+        font-size: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <header class="top-nav">
+    <div class="container top-nav-inner">
+      <div class="brand">
+        <div class="brand-logo">🧠</div>
+        <div>
+          <div class="brand-text-main">Alzheimer’s</div>
+          <div class="brand-text-sub">Early Screening System</div>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="#home" class="nav-link active"><span>首页</span></a>
+        <!-- 筛查跳转到独立的 predict.html -->
+        <a href="predict.html" class="nav-link"><span>筛查</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- 首页 / Home -->
+    <section id="home" class="container">
+      <div class="hero">
+        <div class="hero-content">
+          <div class="hero-kicker">早期识别阿尔茨海默病</div>
+          <h1 class="hero-title">Alzheimer’s Prediction System</h1>
+          <p class="hero-subtitle">
+            通过整合临床信息、简单问卷与筛查指标，本系统为医护人员和研究者提供一个
+            <strong>辅助判断</strong> 的早期风险评估工具，帮助更早发现可能的认知功能下降。
+          </p>
+
+          <div class="hero-badges">
+            <div class="badge">
+              <span>⏱️</span>
+              <div>
+                <div>几分钟完成筛查</div>
+                <small>适合门诊与随访场景</small>
+              </div>
+            </div>
+            <div class="badge">
+              <span>🌿</span>
+              <div>
+                <div>温和自然的交互体验</div>
+                <small>吉卜力风格的可视化界面</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-actions">
+            <!-- 首页按钮：直接跳转到 predict.html -->
+            <button class="primary-btn" id="startPredict">
+              立即开始预测
+              <span>→</span>
+            </button>
+            <button class="ghost-btn" id="scrollMore">
+              了解阿尔茨海默病
+            </button>
+          </div>
+
+          <div class="hero-disclaimer">
+            ⚠️ 本页面演示的是 <strong>教育与科研可视化示例</strong>，不提供真实医疗诊断。
+            所有结果仅作参考，不能替代专业医生的评估和检查。如有记忆或认知方面困扰，请及时就医。
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <img src="photo.png" alt="Alzheimer's System Illustration" class="hero-img" />
+        </div>
+      </div>
+
+      <!-- 三个信息卡片 -->
+      <div class="info-grid">
+        <article class="info-card">
+          <div class="pill">什么是阿尔茨海默病？</div>
+          <h3>进行性认知退化性疾病</h3>
+          <p>
+            阿尔茨海默病是一种常见的神经退行性疾病，表现为记忆减退、学习与执行功能下降，
+            随着病程进展可出现语言障碍、定向力丧失以及人格改变，严重影响日常生活能力。
+          </p>
+        </article>
+
+        <article class="info-card">
+          <div class="pill">为什么要早期筛查？</div>
+          <h3>早识别，早干预</h3>
+          <p>
+            在轻度认知障碍（MCI）阶段进行筛查，有助于尽早识别高风险人群，
+            从而争取更多时间进行生活方式干预、药物治疗及家庭照护计划的制定。
+          </p>
+        </article>
+
+        <article class="info-card">
+          <div class="pill">本项目的定位</div>
+          <h3>辅助决策的预测界面</h3>
+          <p>
+            本网页聚焦于 <strong>直观的风险展示</strong> 和 <strong>柔和的视觉体验</strong>，
+            可作为科研项目原型或门诊宣教工具的参考界面，实现对阿尔茨海默病早期风险的可视化预测。
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll(".nav-link").forEach(function (link) {
+      link.addEventListener("click", function (e) {
+        const href = this.getAttribute("href");
+        if (href && href.startsWith("#")) {
+          e.preventDefault();
+          const target = document.querySelector(href);
+          if (target) target.scrollIntoView({ behavior: "smooth" });
+
+          document.querySelectorAll(".nav-link").forEach(function (l) {
+            l.classList.remove("active");
+          });
+          this.classList.add("active");
+        }
+      });
+    });
+
+    document.getElementById("startPredict").addEventListener("click", function () {
+      window.location.href = "predict.html";
+    });
+
+    document.getElementById("scrollMore").addEventListener("click", function () {
+      const infoGrid = document.querySelector(".info-grid");
+      if (infoGrid) infoGrid.scrollIntoView({ behavior: "smooth" });
+      document.querySelectorAll(".nav-link").forEach(function (l) {
+        l.classList.remove("active");
+      });
+      document.querySelector('.nav-link[href="#home"]').classList.add("active");
+    });
+  </script>
+</body>
+</html>

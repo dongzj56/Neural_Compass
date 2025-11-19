@@ -1,0 +1,19 @@
+已载入 test.csv，共 988 行样本，索引范围 0 ~ 987
+输入样本行号（例如 0），程序会输出该行的标签和字典格式特征；输入 q 退出。
+
+样本索引: 1
+真实标签 DX = CN
+字典格式样本：
+{"AGE":78.5, "PTGENDER":1, "PTEDUCAT":12, "PTETHCAT":1, "PTRACCAT":0, "PTMARRY":1, "APOE4":0.0, "CDRSB":0.0, "ADAS11":6.33, "ADAS13":7.33, "ADASQ4":1.0, "MMSE":28.0, "RAVLT_immediate":30.0, "RAVLT_learning":3.0, "RAVLT_forgetting":1.0, "RAVLT_perc_forgetting":14.2857, "LDELTOTAL":13.0, "DIGITSCOR":40.0, "TRABSCOR":131.0, "FAQ":0.0, "MOCA": null, "EcogPtMem": null, "EcogPtLang": null, "EcogPtVisspat": null, "EcogPtPlan": null, "EcogPtOrgan": null, "EcogPtDivatt": null, "EcogPtTotal": null, "EcogSPMem": null, "EcogSPLang": null, "EcogSPVisspat": null, "EcogSPPlan": null, "EcogSPOrgan": null, "EcogSPDivatt": null, "EcogSPTotal": null}
+
+
+样本索引: 4
+真实标签 DX = Dementia
+字典格式样本：
+{"AGE":64.1, "PTGENDER":0, "PTEDUCAT":18, "PTETHCAT":0, "PTRACCAT":0, "PTMARRY":0, "APOE4":1.0, "CDRSB":4.5, "ADAS11":21.33, "ADAS13":36.33, "ADASQ4":10.0, "MMSE":16.0, "RAVLT_immediate":0.0, "RAVLT_learning":0.0, "RAVLT_forgetting":0.0, "RAVLT_perc_forgetting": null, "LDELTOTAL":0.0, "DIGITSCOR":0.0, "TRABSCOR":0.0, "FAQ":22.0, "MOCA": null, "EcogPtMem": null, "EcogPtLang": null, "EcogPtVisspat": null, "EcogPtPlan": null, "EcogPtOrgan": null, "EcogPtDivatt": null, "EcogPtTotal": null, "EcogSPMem": null, "EcogSPLang": null, "EcogSPVisspat": null, "EcogSPPlan": null, "EcogSPOrgan": null, "EcogSPDivatt": null, "EcogSPTotal": null}
+
+
+样本索引: 5
+真实标签 DX = MCI
+字典格式样本：
+{"AGE":76.8, "PTGENDER":0, "PTEDUCAT":12, "PTETHCAT":0, "PTRACCAT":0, "PTMARRY":0, "APOE4":0.0, "CDRSB":0.5, "ADAS11":11.67, "ADAS13":18.67, "ADASQ4":5.0, "MMSE":27.0, "RAVLT_immediate":21.0, "RAVLT_learning":6.0, "RAVLT_forgetting":6.0, "RAVLT_perc_forgetting":85.7143, "LDELTOTAL": null, "DIGITSCOR":23.0, "TRABSCOR":209.0, "FAQ":0.0, "MOCA": null, "EcogPtMem": null, "EcogPtLang": null, "EcogPtVisspat": null, "EcogPtPlan": null, "EcogPtOrgan": null, "EcogPtDivatt": null, "EcogPtTotal": null, "EcogSPMem": null, "EcogSPLang": null, "EcogSPVisspat": null, "EcogSPPlan": null, "EcogSPOrgan": null, "EcogSPDivatt": null, "EcogSPTotal": null}
