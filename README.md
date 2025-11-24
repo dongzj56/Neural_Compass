@@ -45,7 +45,7 @@ python backend/app.py
    - 直接在浏览器打开 `frontend/index.html`（或使用任意静态服务器）；筛查页为 `frontend/predict.html`
    - 前端默认访问 `http://localhost:8000` 的预测接口；`predict.html` 的聊天区使用 `http://127.0.0.1:5000/chat`
 
-## 接口说明（预测）
+## 接口说明
 - `GET /`：服务健康检查与说明
 - `GET /feature_cols`：返回当前使用的特征列与数量
 - `POST /predict`：同步预测
@@ -53,7 +53,6 @@ python backend/app.py
   - 返回：`pred`、`pred_label`、`proba`、`classes`、`label_names`、`used_features`、`elapsed`
 - `POST /predict_async` → `GET /predict_job/{job_id}`：异步预测与轮询结果
 
-## 接口说明（聊天）
 - `POST /chat`（Flask，端口 `5000`）：请求体为 `{"message": "..."}`，返回 `{"response": "..."}`
 - `POST /chat`（FastAPI，端口 `8000`）：返回 `{"reply": "..."}`，首页脚本使用该形式
 
